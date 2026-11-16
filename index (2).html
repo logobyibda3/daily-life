@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101827">
+<title>My Life Planner</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+margin:0;
+background:#101827;
+color:#f1f5f9;
+font-family:Arial,sans-serif;
+}
+
+header{
+padding:25px 15px;
+text-align:center;
+background:linear-gradient(135deg,#172554,#4338ca);
+}
+
+header h1{color:#c7d2fe;margin:0 0 12px}
+#clock{font-size:25px}
+#dateText{color:#cbd5e1}
+
+nav{
+display:flex;
+gap:7px;
+padding:10px;
+overflow-x:auto;
+background:#1e293b;
+position:sticky;
+top:0;
+z-index:5;
+}
+
+nav button{
+white-space:nowrap;
+background:#334155;
+color:white;
+border:0;
+padding:12px;
+border-radius:9px;
+}
+
+nav button.active{background:#6366f1}
+
+.container{
+max-width:1050px;
+margin:auto;
+padding:15px;
+}
+
+.page{display:none}
+.page.active{display:block}
+
+.card{
+background:#1e293b;
+border:1px solid #334155;
+padding:18px;
+border-radius:14px;
+margin-bottom:15px;
+}
+
+h2{color:#a5b4fc}
+h3{color:#c4b5fd}
+
+input,select{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:8px;
+border:1px solid #475569;
+background:#0f172a;
+color:white;
+font-size:15px;
+}
+
+input[type=checkbox]{width:auto}
+
+label{
+display:block;
+margin-top:12px;
+color:#cbd5e1;
+}
+
+button{cursor:pointer}
+
+.main{
+background:#6366f1;
+color:white;
+border:0;
+padding:12px 17px;
+border-radius:9px;
+margin:4px;
+}
+
+.delete{
+background:#991b1b;
+color:white;
+border:0;
+padding:8px;
+border-radius:7px;
+}
+
+.task{
+background:#334155;
+padding:12px;
+margin:8px 0;
+border-radius:9px;
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.task span{flex:1;overflow-wrap:anywhere}
+
+.task.done span{
+text-decoration:line-through;
+color:#86efac;
+}
+
+.task input{width:auto;margin:0}
+
+.check-mark{
+color:#4ade80;
+font-size:22px;
+font-weight:bold;
+}
+
+.stats{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+}
+
+.stat{
+background:#334155;
+padding:15px;
+text-align:center;
+border-radius:10px;
+}
+
+.stat strong{
+display:block;
+font-size:23px;
+color:#a5b4fc;
+margin-top:8px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:650px;
+}
+
+td,th{
+padding:11px;
+border:1px solid #475569;
+text-align:center;
+}
+
+th{background:#3730a3}
+td{background:#334155}
+
+.tablewrap{overflow-x:auto}
+
+small{color:#94a3b8}
+.empty{color:#94a3b8;padding:10px}
+
+.report-section{
+background:#172554;
+border:1px solid #4338ca;
+padding:15px;
+border-radius:12px;
+margin:15px 0;
+}
+
+.report-section h3{
+border-bottom:1px solid #475569;
+padding-bottom:10px;
+}
+
+.report-goal{
+background:#263449;
+padding:12px;
+margin:8px 0;
+border-radius:9px;
+}
+
+.report-goal strong{color:#86efac}
+
+footer{
+text-align:center;
+padding:25px;
+color:#64748b;
+}
+
+@media(max-width:500px){
+.container{padding:9px}
+.card{padding:13px}
+}
+
+@media print{
+body{
+background:white!important;
+color:black!important;
+}
+
+header,nav,footer,.no-print{
+display:none!important;
+}
+
+#reportContent{
+background:white!important;
+color:black!important;
+border:0!important;
+}
+
+#reportContent *{
+color:black!important;
+}
+
+#reportContent .report-section,
+#reportContent .report-goal,
+#reportContent td,
+#reportContent th,
+#reportContent .stat{
+background:white!important;
+border:1px solid #999!important;
+}
+
+.tablewrap{overflow:visible}
+table{min-width:0;font-size:10px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>My Life Planner</h1>
+<p>نظّم حياتك وحقق أهدافك</p>
+<div id="clock"></div>
+<div id="dateText"></div>
+</header>
+
+<nav>
+<button class="active" data-page="home">الرئيسية</button>
+<button data-page="sleep">النوم</button>
+<button data-page="alarm">المنبه</button>
+<button data-page="gym">الجيم</button>
+<button data-page="goals">الأهداف</button>
+<button data-page="completed">إنجازاتي</button>
+<button data-page="report">التقارير</button>
+</nav>
+
+<div class="container">
+
+<!-- الرئيسية -->
+
+<section id="home" class="page active">
+
+<div class="card">
+<h2>أهلاً بيك في يوم جديد 👋</h2>
+
+<div class="stats">
+
+<div class="stat">
+أهداف اليوم
+<strong id="todayCount">0</strong>
+</div>
+
+<div class="stat">
+تم إنجازه
+<strong id="doneCount">0</strong>
+</div>
+
+<div class="stat">
+ساعات النوم
+<strong id="sleepCount">غير مسجل</strong>
+</div>
+
+<div class="stat">
+نسبة الإنجاز
+<strong id="percent">0%</strong>
+</div>
+
+</div>
+</div>
+
+<div class="card">
+<h2>أهداف اليوم 🎯</h2>
+<div id="homeTasks"></div>
+</div>
+
+<div class="card">
+<h2>منبهك القادم ⏰</h2>
+<div id="homeAlarm"></div>
+</div>
+
+</section>
+
+<!-- النوم -->
+
+<section id="sleep" class="page">
+
+<div class="card">
+<h2>🌙 تسجيل النوم</h2>
+
+<label>التاريخ</label>
+<input type="date" id="sleepDate">
+
+<label>وقت النوم</label>
+<input type="time" id="sleepTime">
+
+<label>وقت الاستيقاظ</label>
+<input type="time" id="wakeTime">
+
+<button class="main" id="saveSleepBtn">حفظ سجل النوم</button>
+</div>
+
+<div class="card">
+<h2>سجل النوم</h2>
+
+<div class="tablewrap">
+<table>
+<thead>
+<tr>
+<th>التاريخ</th>
+<th>نمت</th>
+<th>صحيت</th>
+<th>المدة</th>
+<th>حذف</th>
+</tr>
+</thead>
+<tbody id="sleepRows"></tbody>
+</table>
+</div>
+
+</div>
+</section>
+
+<!-- المنبه -->
+
+<section id="alarm" class="page">
+
+<div class="card">
+<h2>⏰ منبه الاستيقاظ</h2>
+
+<label>موعد المنبه</label>
+<input type="time" id="alarmTime">
+
+<label>
+<input type="checkbox" id="repeatAlarm" checked>
+ تكرار يومي
+</label>
+
+<button class="main" id="setAlarmBtn">حفظ المنبه</button>
+<button class="main" id="stopAlarmBtn">إيقاف المنبه</button>
+
+<p id="alarmStatus"></p>
+
+<p><small>
+منبه HTML يعمل والصفحة مفتوحة فقط.
+تشغيله بعد إغلاق التطبيق يحتاج ربطه بمنبه Android الأصلي عند بناء APK.
+</small></p>
+</div>
+
+</section>
+
+<!-- الجيم -->
+
+<section id="gym" class="page">
+
+<div class="card">
+<h2>🏋️ متابعة الجيم</h2>
+
+<label>التاريخ</label>
+<input type="date" id="gymDate">
+
+<label>هل ذهبت للجيم؟</label>
+<select id="gymWent">
+<option value="yes">نعم</option>
+<option value="no">لا</option>
+</select>
+
+<label>وقت الذهاب</label>
+<input type="time" id="gymTime">
+
+<button class="main" id="saveGymBtn">حفظ</button>
+</div>
+
+<div class="card">
+<h2>سجل الجيم</h2>
+<div id="gymRows"></div>
+</div>
+
+</section>
+
+<!-- الأهداف -->
+
+<section id="goals" class="page">
+
+<div class="card">
+<h2>🎯 إضافة هدف جديد</h2>
+
+<label>اسم الهدف</label>
+<input id="goalName" placeholder="مثلاً: مذاكرة الرياضيات">
+
+<label>نوع الهدف</label>
+<select id="goalType">
+<option value="day">هدف يومي</option>
+<option value="week">هدف أسبوعي</option>
+<option value="month">هدف شهري</option>
+</select>
+
+<label>تاريخ الهدف</label>
+<input type="date" id="goalDate">
+
+<button class="main" id="addGoalBtn">إضافة الهدف</button>
+</div>
+
+<div class="card">
+<h2>أهداف اليوم</h2>
+<div id="dayGoals"></div>
+</div>
+
+<div class="card">
+<h2>أهداف الأسبوع</h2>
+<div id="weekGoals"></div>
+</div>
+
+<div class="card">
+<h2>أهداف الشهر</h2>
+<div id="monthGoals"></div>
+</div>
+
+</section>
+
+<!-- الإنجازات -->
+
+<section id="completed" class="page">
+
+<div class="card">
+<h2>🏆 إنجازاتي</h2>
+
+<h3>أهداف اليوم</h3>
+<div id="completedDay"></div>
+
+<h3>أهداف الأسبوع</h3>
+<div id="completedWeek"></div>
+
+<h3>أهداف الشهر</h3>
+<div id="completedMonth"></div>
+
+</div>
+</section>
+
+<!-- التقارير -->
+
+<section id="report" class="page">
+
+<div class="card" id="reportContent">
+
+<h2>📊 التقرير الأسبوعي</h2>
+
+<p id="reportPeriod"></p>
+
+<div id="weekSummary"></div>
+
+<!-- الجيم -->
+
+<div class="report-section">
+<h3>🏋️ أيام الذهاب للجيم</h3>
+<div id="gymReport"></div>
+</div>
+
+<!-- النوم -->
+
+<div class="report-section">
+<h3>🌙 تقرير النوم</h3>
+
+<div class="stats">
+<div class="stat">
+متوسط ساعات النوم
+<strong id="averageSleep">0</strong>
+</div>
+
+<div class="stat">
+أيام النوم المسجلة
+<strong id="sleepDays">0</strong>
+</div>
+</div>
+
+<div class="tablewrap">
+<table>
+<thead>
+<tr>
+<th>اليوم</th>
+<th>التاريخ</th>
+<th>وقت النوم</th>
+<th>وقت الاستيقاظ</th>
+<th>مدة النوم</th>
+</tr>
+</thead>
+<tbody id="sleepReport"></tbody>
+</table>
+</div>
+</div>
+
+<!-- أهداف يومية -->
+
+<div class="report-section">
+<h3>🎯 الأهداف اليومية المنجزة</h3>
+<div id="dailyReport"></div>
+</div>
+
+<!-- أهداف أسبوعية -->
+
+<div class="report-section">
+<h3>📅 الأهداف الأسبوعية المنجزة</h3>
+<div id="weeklyReport"></div>
+</div>
+
+<!-- أهداف شهرية -->
+
+<div class="report-section">
+<h3>🗓️ الأهداف الشهرية المنجزة</h3>
+<div id="monthlyReport"></div>
+</div>
+
+</div>
+
+<button class="main no-print" id="pdfBtn">
+تحميل التقرير PDF
+</button>
+
+</section>
+
+</div>
+
+<footer>My Life Planner © 2026</footer>
+
+<script>
+
+/* التخزين */
+
+const $=id=>document.getElementById(id);
+
+function load(key,fallback){
+try{
+return JSON.parse(localStorage.getItem(key))??fallback;
+}catch(e){
+return fallback;
+}
+}
+
+let goals=load("planner_goals",[]);
+let sleeps=load("planner_sleeps",{});
+let gyms=load("planner_gyms",{});
+let alarm=load("planner_alarm",null);
+
+let alarmTimer=null;
+
+/* التاريخ والساعة بتوقيت القاهرة */
+
+function cairoParts(){
+
+let parts=new Intl.DateTimeFormat("en-GB",{
+timeZone:"Africa/Cairo",
+year:"numeric",
+month:"2-digit",
+day:"2-digit",
+hour:"2-digit",
+minute:"2-digit",
+second:"2-digit",
+hourCycle:"h23"
+}).formatToParts(new Date());
+
+let result={};
+
+parts.forEach(p=>result[p.type]=p.value);
+
+return result;
+}
+
+function today(){
+
+let p=cairoParts();
+
+return p.year+"-"+p.month+"-"+p.day;
+
+}
+
+function updateClock(){
+
+let now=new Date();
+
+$("clock").textContent=
+now.toLocaleTimeString("ar-EG",{
+timeZone:"Africa/Cairo",
+hour:"2-digit",
+minute:"2-digit",
+second:"2-digit",
+hour12:true
+});
+
+$("dateText").textContent=
+now.toLocaleDateString("ar-EG",{
+timeZone:"Africa/Cairo",
+weekday:"long",
+year:"numeric",
+month:"long",
+day:"numeric"
+});
+
+}
+
+/* عرض الوقت بنظام 12 ساعة */
+
+function formatTime(time){
+
+if(!time)return "—";
+
+let [h,m]=time.split(":").map(Number);
+
+let period=h>=12?"م":"ص";
+
+let hour=h%12||12;
+
+return String(hour).padStart(2,"0")+":"+String(m).padStart(2,"0")+" "+period;
+
+}
+
+/* التاريخ والأسبوع */
+
+function dateObj(s){
+
+let [y,m,d]=s.split("-").map(Number);
+
+return new Date(Date.UTC(y,m-1,d));
+
+}
+
+function dateString(d){
+
+return d.getUTCFullYear()+"-"+
+String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+String(d.getUTCDate()).padStart(2,"0");
+
+}
+
+function weekStart(s){
+
+let d=dateObj(s);
+
+let diff=(d.getUTCDay()+1)%7;
+
+d.setUTCDate(d.getUTCDate()-diff);
+
+return dateString(d);
+
+}
+
+function sameWeek(a,b){
+
+return weekStart(a)===weekStart(b);
+
+}
+
+function weekDays(){
+
+let start=weekStart(today());
+
+let d=dateObj(start);
+
+let names=[
+"الأحد","الاثنين","الثلاثاء",
+"الأربعاء","الخميس","الجمعة","السبت"
+];
+
+let result=[];
+
+for(let i=0;i<7;i++){
+
+let x=new Date(d);
+
+x.setUTCDate(d.getUTCDate()+i);
+
+result.push({
+date:dateString(x),
+name:names[x.getUTCDay()]
+});
+
+}
+
+return result;
+
+}
+
+/* حساب النوم */
+
+function duration(start,end){
+
+if(!start||!end)return 0;
+
+let [h1,m1]=start.split(":").map(Number);
+let [h2,m2]=end.split(":").map(Number);
+
+let mins=(h2*60+m2)-(h1*60+m1);
+
+if(mins<0)mins+=1440;
+
+return mins;
+
+}
+
+function formatDuration(mins){
+
+let h=Math.floor(mins/60);
+let m=mins%60;
+
+return h+" ساعة "+m+" دقيقة";
+
+}
+
+/* حفظ البيانات */
+
+function saveAll(){
+
+localStorage.setItem("planner_goals",JSON.stringify(goals));
+localStorage.setItem("planner_sleeps",JSON.stringify(sleeps));
+localStorage.setItem("planner_gyms",JSON.stringify(gyms));
+localStorage.setItem("planner_alarm",JSON.stringify(alarm));
+
+}
+
+/* التنقل */
+
+function switchPage(id){
+
+document.querySelectorAll(".page").forEach(p=>{
+p.classList.remove("active");
+});
+
+document.querySelectorAll("nav button").forEach(b=>{
+b.classList.remove("active");
+});
+
+$(id).classList.add("active");
+
+document.querySelector('[data-page="'+id+'"]').classList.add("active");
+
+render();
+
+}
+
+document.querySelectorAll("nav button").forEach(b=>{
+b.addEventListener("click",()=>{
+switchPage(b.dataset.page);
+});
+});
+
+/* النوم */
+
+function saveSleep(){
+
+let date=$("sleepDate").value;
+let start=$("sleepTime").value;
+let end=$("wakeTime").value;
+
+if(!date||!start||!end){
+alert("أدخل جميع البيانات");
+return;
+}
+
+sleeps[date]={
+start,
+end,
+mins:duration(start,end)
+};
+
+saveAll();
+render();
+
+alert("تم حفظ سجل النوم");
+
+}
+
+function removeSleep(date){
+
+if(!confirm("حذف سجل النوم؟"))return;
+
+delete sleeps[date];
+
+saveAll();
+render();
+
+}
+
+/* الجيم */
+
+function saveGym(){
+
+let date=$("gymDate").value;
+let went=$("gymWent").value;
+let time=$("gymTime").value;
+
+if(!date){
+alert("اختر التاريخ");
+return;
+}
+
+if(went==="yes"&&!time){
+alert("أدخل وقت الذهاب");
+return;
+}
+
+gyms[date]={
+went,
+time:went==="yes"?time:""
+};
+
+saveAll();
+render();
+
+alert("تم حفظ سجل الجيم");
+
+}
+
+function deleteGym(date){
+
+if(!confirm("حذف سجل الجيم؟"))return;
+
+delete gyms[date];
+
+saveAll();
+render();
+
+}
+
+/* الأهداف */
+
+function addGoal(){
+
+let name=$("goalName").value.trim();
+let type=$("goalType").value;
+let date=$("goalDate").value;
+
+if(!name||!date){
+alert("أدخل اسم الهدف والتاريخ");
+return;
+}
+
+goals.push({
+id:Date.now()+Math.random(),
+name,
+type,
+date,
+done:false,
+doneDate:null
+});
+
+$("goalName").value="";
+
+saveAll();
+render();
+
+}
+
+function toggleGoal(id){
+
+let g=goals.find(x=>x.id===id);
+
+if(!g)return;
+
+g.done=!g.done;
+
+g.doneDate=g.done?today():null;
+
+saveAll();
+render();
+
+}
+
+function deleteGoal(id){
+
+if(!confirm("هل تريد حذف الهدف؟"))return;
+
+goals=goals.filter(g=>g.id!==id);
+
+saveAll();
+render();
+
+}
+
+/* منع أكواد HTML داخل أسماء الأهداف */
+
+function escapeHTML(s){
+
+return String(s).replace(/[&<>"']/g,c=>({
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#39;"
+}[c]));
+
+}
+
+/* عرض الأهداف */
+
+function goalList(items){
+
+if(!items.length){
+return '<p class="empty">لا توجد أهداف</p>';
+}
+
+return items.map(g=>`
+
+<div class="task ${g.done?"done":""}">
+
+<input type="checkbox"
+${g.done?"checked":""}
+onchange="toggleGoal(${g.id})">
+
+<span>${escapeHTML(g.name)}</span>
+
+<button class="delete"
+onclick="deleteGoal(${g.id})">حذف</button>
+
+</div>
+
+`).join("");
+
+}
+
+/* عرض الإنجازات في التقرير */
+
+function completedReport(items){
+
+if(!items.length){
+return '<p class="empty">لم يتم إنجاز أهداف في هذا القسم بعد.</p>';
+}
+
+return items.map(g=>`
+
+<div class="report-goal">
+
+<strong>✓ ${escapeHTML(g.name)}</strong>
+
+<p>تاريخ إنجاز الهدف: ${g.doneDate||"غير مسجل"}</p>
+
+</div>
+
+`).join("");
+
+}
+
+/* التقرير الأسبوعي */
+
+function makeReport(){
+
+let days=weekDays();
+
+let total=0;
+let count=0;
+let gymCount=0;
+
+let sleepRows=[];
+let gymRows=[];
+
+days.forEach(day=>{
+
+let s=sleeps[day.date];
+let g=gyms[day.date];
+
+if(s){
+
+total+=s.mins;
+count++;
+
+}
+
+sleepRows.push(`
+
+<tr>
+<td>${day.name}</td>
+<td>${day.date}</td>
+<td>${formatTime(s?.start)}</td>
+<td>${formatTime(s?.end)}</td>
+<td>${s?formatDuration(s.mins):"—"}</td>
+</tr>
+
+`);
+
+if(g&&g.went==="yes"){
+
+gymCount++;
+
+gymRows.push(`
+
+<div class="report-goal">
+<strong>✓ ${day.name}</strong>
+<p>التاريخ: ${day.date}</p>
+<p>وقت الذهاب: ${formatTime(g.time)}</p>
+</div>
+
+`);
+
+}
+
+});
+
+$("sleepReport").innerHTML=sleepRows.join("");
+
+$("gymReport").innerHTML=
+gymRows.length?gymRows.join(""):
+'<p class="empty">لم تسجل أي زيارة للجيم هذا الأسبوع.</p>';
+
+$("averageSleep").textContent=
+count?formatDuration(Math.round(total/count)):"غير متاح";
+
+$("sleepDays").textContent=count;
+
+let start=weekStart(today());
+let end=days[6].date;
+
+$("reportPeriod").textContent=
+"الفترة من السبت "+start+" إلى الجمعة "+end;
+
+let daily=goals.filter(g=>
+g.type==="day"&&
+g.done&&
+g.doneDate&&
+sameWeek(g.doneDate,today())
+);
+
+let weekly=goals.filter(g=>
+g.type==="week"&&
+g.done&&
+g.doneDate&&
+sameWeek(g.doneDate,today())
+);
+
+let monthly=goals.filter(g=>
+g.type==="month"&&
+g.done&&
+g.doneDate&&
+g.doneDate.slice(0,7)===today().slice(0,7)
+);
+
+$("dailyReport").innerHTML=completedReport(daily);
+
+$("weeklyReport").innerHTML=completedReport(weekly);
+
+$("monthlyReport").innerHTML=completedReport(monthly);
+
+$("weekSummary").innerHTML=`
+
+<div class="stats">
+
+<div class="stat">
+متوسط النوم
+<strong>${count?formatDuration(Math.round(total/count)):"غير متاح"}</strong>
+</div>
+
+<div class="stat">
+مرات الجيم
+<strong>${gymCount}</strong>
+</div>
+
+<div class="stat">
+أهداف يومية منجزة
+<strong>${daily.length}</strong>
+</div>
+
+<div class="stat">
+أهداف أسبوعية منجزة
+<strong>${weekly.length}</strong>
+</div>
+
+</div>
+
+`;
+
+}
+
+/* المنبه */
+
+function cairoTime(){
+
+let p=cairoParts();
+
+return p.hour+":"+p.minute;
+
+}
+
+function setAlarm(){
+
+let time=$("alarmTime").value;
+
+if(!time){
+alert("اختر موعد المنبه");
+return;
+}
+
+alarm={
+time,
+repeat:$("repeatAlarm").checked
+};
+
+saveAll();
+startAlarm();
+render();
+
+alert("تم حفظ المنبه");
+
+}
+
+function startAlarm(){
+
+if(alarmTimer){
+clearInterval(alarmTimer);
+alarmTimer=null;
+}
+
+if(!alarm)return;
+
+alarmTimer=setInterval(()=>{
+
+if(!alarm)return;
+
+let current=cairoTime();
+
+let key="alarm_"+today()+"_"+alarm.time;
+
+if(current===alarm.time&&localStorage.getItem(key)!=="done"){
+
+localStorage.setItem(key,"done");
+
+alert("⏰ حان موعد الاستيقاظ!");
+
+if(!alarm.repeat){
+alarm=null;
+saveAll();
+}
+
+}
+
+},5000);
+
+}
+
+function stopAlarm(){
+
+if(alarmTimer){
+clearInterval(alarmTimer);
+alarmTimer=null;
+}
+
+alarm=null;
+
+saveAll();
+render();
+
+alert("تم إيقاف المنبه");
+
+}
+
+/* عرض البرنامج */
+
+function render(){
+
+let t=today();
+
+let day=goals.filter(g=>
+g.type==="day"&&g.date===t
+);
+
+let week=goals.filter(g=>
+g.type==="week"&&sameWeek(g.date,t)
+);
+
+let month=goals.filter(g=>
+g.type==="month"&&g.date.slice(0,7)===t.slice(0,7)
+);
+
+$("dayGoals").innerHTML=goalList(day);
+$("weekGoals").innerHTML=goalList(week);
+$("monthGoals").innerHTML=goalList(month);
+
+$("homeTasks").innerHTML=goalList(day);
+
+$("completedDay").innerHTML=goalList(day.filter(g=>g.done));
+$("completedWeek").innerHTML=goalList(week.filter(g=>g.done));
+$("completedMonth").innerHTML=goalList(month.filter(g=>g.done));
+
+let completed=day.filter(g=>g.done).length;
+
+$("todayCount").textContent=day.length;
+$("doneCount").textContent=completed;
+
+$("percent").textContent=
+(day.length?Math.round(completed/day.length*100):0)+"%";
+
+$("sleepCount").textContent=
+sleeps[t]?formatDuration(sleeps[t].mins):"غير مسجل";
+
+$("sleepRows").innerHTML=
+Object.keys(sleeps).sort().reverse().map(d=>`
+
+<tr>
+<td>${d}</td>
+<td>${formatTime(sleeps[d].start)}</td>
+<td>${formatTime(sleeps[d].end)}</td>
+<td>${formatDuration(sleeps[d].mins)}</td>
+<td><button class="delete" onclick="removeSleep('${d}')">حذف</button></td>
+</tr>
+
+`).join("")||'<tr><td colspan="5">لا توجد سجلات</td></tr>';
+
+$("gymRows").innerHTML=
+Object.keys(gyms).sort().reverse().map(d=>`
+
+<div class="task">
+<span>
+${d} —
+${gyms[d].went==="yes"?
+"ذهبت للجيم الساعة "+formatTime(gyms[d].time):
+"لم أذهب للجيم"}
+</span>
+<button class="delete" onclick="deleteGym('${d}')">حذف</button>
+</div>
+
+`).join("")||'<p class="empty">لا يوجد سجل للجيم</p>';
+
+$("homeAlarm").textContent=
+alarm?"المنبه مضبوط على "+formatTime(alarm.time):"لا يوجد منبه مضبوط";
+
+$("alarmStatus").textContent=
+alarm?"المنبه مضبوط على "+formatTime(alarm.time):"لا يوجد منبه مضبوط";
+
+makeReport();
+
+}
+
+/* PDF */
+
+function downloadPDF(){
+
+window.print();
+
+}
+
+/* تشغيل البرنامج */
+
+$("saveSleepBtn").onclick=saveSleep;
+$("saveGymBtn").onclick=saveGym;
+$("addGoalBtn").onclick=addGoal;
+$("setAlarmBtn").onclick=setAlarm;
+$("stopAlarmBtn").onclick=stopAlarm;
+$("pdfBtn").onclick=downloadPDF;
+
+function initialize(){
+
+let t=today();
+
+$("sleepDate").value=t;
+$("gymDate").value=t;
+$("goalDate").value=t;
+
+if(alarm){
+
+$("alarmTime").value=alarm.time;
+$("repeatAlarm").checked=alarm.repeat;
+
+startAlarm();
+
+}
+
+updateClock();
+render();
+
+}
+
+window.addEventListener("pagehide",saveAll);
+
+document.addEventListener("visibilitychange",()=>{
+if(!document.hidden){
+updateClock();
+render();
+}
+});
+
+setInterval(updateClock,1000);
+
+initialize();
+
+</script>
+
+</body>
+</html>
